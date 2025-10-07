@@ -1,76 +1,63 @@
 const fmt = @import("std").fmt;
 
 const types = @import("types.zig");
+pub const codes = @import("codes.zig");
 pub const ThemeColors = types.ThemeColors;
+pub const RgbColor = types.RgbColor;
 
-pub const ColorCodes = enum {
-    THEME,
-    FG_8BIT,
-    BG_8BIT,
-    FG_RGB,
-    BG_RGB,
+pub const ColorCodes = union(enum) {
+    FG_THEME: ThemeColors,
+    BG_THEME: ThemeColors,
+    FG_8BIT: u8,
+    BG_8BIT: u8,
+    FG_RGB: RgbColor,
+    BG_RGB: RgbColor,
     FG_DEFAULT,
     BG_DEFAULT,
     RESET,
 
-    pub fn get_code(self: ColorCodes) []const u8 {
+    pub fn get_formatted_code(self: ColorCodes, buf: []u8) ![]const u8 {
         return switch (self) {
-            .THEME => "{d}",
-            .FG_8BIT => "38;5;{d}",
-            .BG_8BIT => "48;5;{d}",
-            .FG_RGB => "38;2;{d};{d};{d}",
-            .BG_RGB => "48;2;{d};{d};{d}",
-            .FG_DEFAULT => "39",
-            .BG_DEFAULT => "49",
-            .RESET => "0",
+            .FG_THEME => |v| {
+                return try fmt.bufPrint(buf, codes.FG_THEME_CODE, .{v.as_fg_code()});
+            },
+            .BG_THEME => |v| {
+                return try fmt.bufPrint(buf, codes.BG_THEME_CODE, .{v.as_bg_code()});
+            },
+            .FG_8BIT => |v| {
+                return try fmt.bufPrint(buf, codes.FG_8BIT_CODE, .{v});
+            },
+            .BG_8BIT => |v| {
+                return try fmt.bufPrint(buf, codes.BG_8BIT_CODE, .{v});
+            },
+            .FG_RGB => |v| {
+                return try fmt.bufPrint(buf, codes.FG_RGB_CODE, .{ v.r, v.g, v.b });
+            },
+            .BG_RGB => |v| {
+                return try fmt.bufPrint(buf, codes.BG_RGB_CODE, .{ v.r, v.g, v.b });
+            },
+            .FG_DEFAULT => codes.FG_DEFAULT_CODE[0..],
+            .BG_DEFAULT => codes.BG_DEFAULT_CODE[0..],
+            .RESET => codes.RESET_CODE[0..],
         };
     }
 };
 
-pub fn fg_theme_code(theme: ThemeColors, buf: []u8) ![]u8 {
-    return try fmt.bufPrint(
-        buf,
-        ColorCodes.THEME.get_code(),
-        .{theme.as_fg_code()},
-    );
+pub fn fg_theme(theme: ThemeColors) ColorCodes {
+    return .{ .FG_THEME = theme };
 }
-
-pub fn bg_theme_code(theme: ThemeColors, buf: []u8) ![]u8 {
-    return try fmt.bufPrint(
-        buf,
-        ColorCodes.THEME.get_code(),
-        .{theme.as_bg_code()},
-    );
+pub fn bg_theme(theme: ThemeColors) ColorCodes {
+    return .{ .BG_THEME = theme };
 }
-
-pub fn fg_8bit_code(color: u8, buf: []u8) ![]u8 {
-    return try fmt.bufPrint(
-        buf,
-        ColorCodes.FG_8BIT.get_code(),
-        .{color},
-    );
+pub fn fg_8bit(val: u8) ColorCodes {
+    return .{ .FG_8BIT = val };
 }
-
-pub fn bg_8bit_code(color: u8, buf: []u8) !u8 {
-    return try fmt.bufPrint(
-        buf,
-        ColorCodes.BG_8BIT.get_code(),
-        .{color},
-    );
+pub fn bg_8bit(val: u8) ColorCodes {
+    return .{ .BG_8BIT = val };
 }
-
-pub fn fg_rgb_code(r: u8, g: u8, b: u8, buf: []u8) ![]u8 {
-    return try fmt.bufPrint(
-        buf,
-        ColorCodes.FG_RGB.get_code(),
-        .{ r, g, b },
-    );
+pub fn fg_rgb(r: u8, g: u8, b: u8) ColorCodes {
+    return .{ .FG_RGB = .{ .r = r, .g = g, .b = b } };
 }
-
-pub fn bg_rgb_code(r: u8, g: u8, b: u8, buf: []u8) ![]u8 {
-    return try fmt.bufPrint(
-        buf,
-        ColorCodes.BG_RGB.get_code(),
-        .{ r, g, b },
-    );
+pub fn bg_rgb(r: u8, g: u8, b: u8) ColorCodes {
+    return .{ .BG_RGB = .{ .r = r, .g = g, .b = b } };
 }

@@ -31,3 +31,9 @@ pub const ThemeColors = enum(u8) {
         return 100 + (c - 8);
     }
 };
+
+pub const RgbColor = struct {
+    r: u8,
+    g: u8,
+    b: u8,
+};
