@@ -15,15 +15,15 @@ pub fn main() void {
     var bg_buf: [19]u8 = undefined;
     var fg_buf: [19]u8 = undefined;
 
-    const bg_slice = bg_color.get_formatted_code(&bg_buf) catch return;
-    const fg_slice = fg_color.get_formatted_code(&fg_buf) catch return;
+    const bg_slice = bg_color.as_code(&bg_buf) catch return;
+    const fg_slice = fg_color.as_code(&fg_buf) catch return;
 
     var fmt_buf: [500]u8 = undefined;
 
     // Creamos un array fijo de slices constantes
     var codes_array: [2][]const u8 = .{ bg_slice, fg_slice };
 
-    const combined = anzi.sgr.wrap_combine_sgr_codes(&codes_array, &fmt_buf) catch return;
+    const combined = anzi.sgr.wrap_combine_sgr_slices(&codes_array, &fmt_buf) catch return;
 
     termz.io.write(combined);
 
@@ -33,13 +33,41 @@ pub fn main() void {
     var buf2: [19]u8 = undefined;
     const reset = anzi.sgr.wrap_sgr_code(nc, &buf2) catch return;
 
-    termz.mode.set_term_mode(old_config) catch return;
-
     anzi_color.set_fg_rgb_color(255, 0, 0);
 
     termz.io.write(reset);
 
-    anzi_style.test_style_codes();
+    var buf: [200]u8 = undefined;
+
+    const v1 = anzi_color.enum_fg_rgb(0, 255, 0);
+    const v2 = anzi_color.enum_bg_theme(.Blue);
+
+    const result = anzi.sgr.wrap_combine_sgr_codes(
+        &.{
+            anzi.sgr.SgrCodeEnum{ .ColorCode = v1 },
+            anzi.sgr.SgrCodeEnum{ .ColorCode = v2 },
+            anzi.sgr.SgrCodeEnum{ .StyleCode = .DoubleUnderline },
+        },
+        &buf,
+    ) catch {
+        std.debug.print("wrap combine failed", .{});
+        return;
+    };
+
+    termz.io.write(result);
+    termz.io.write("\njdsa\n");
+
+    anzi.sgr.send_combine_sgr_codes(&.{
+        anzi.sgr.SgrCodeEnum{ .ColorCode = anzi_color.enum_fg_theme(.Blue) },
+        anzi.sgr.SgrCodeEnum{ .ColorCode = anzi_color.enum_bg_theme(.BrightMagenta) },
+        anzi.sgr.SgrCodeEnum{ .StyleCode = .DoubleUnderline },
+        anzi.sgr.SgrCodeEnum{ .StyleCode = .Blink_Slow },
+        anzi.sgr.SgrCodeEnum{ .StyleCode = .Overlined },
+    });
+
+    termz.io.write("\nsdaskd 222\n");
+
     anzi_style.StyleCodeEnum.Reset.send();
-    anzi_style.StyleCodeEnum.Blink_Slow.send();
+
+    termz.mode.set_term_mode(old_config) catch return;
 }

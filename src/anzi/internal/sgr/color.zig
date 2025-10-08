@@ -19,7 +19,7 @@ pub const ColorCodeEnum = union(enum) {
     FG_DEFAULT,
     BG_DEFAULT,
 
-    pub fn get_formatted_code(self: ColorCodeEnum, buf: []u8) ![]const u8 {
+    pub fn as_code(self: ColorCodeEnum, buf: []u8) ![]const u8 {
         return switch (self) {
             .FG_THEME => |v| {
                 return try buf_print(buf, codes.FG_THEME_CODE, .{v.as_fg_code()});

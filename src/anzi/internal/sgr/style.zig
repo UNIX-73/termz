@@ -18,21 +18,6 @@ const STYLE_CODES: [77][]const u8 = init_style_codes: {
     break :init_style_codes arr;
 };
 
-pub fn test_style_codes() void {
-    for (0..STYLE_CODES.len) |i| {
-        const data = STYLE_CODES[i];
-
-        var buf: [50]u8 = undefined;
-        const slice = buf_print(
-            &buf,
-            "val({d}) = {s}\n",
-            .{ i, data },
-        ) catch return;
-
-        stdout_write(slice);
-    }
-}
-
 /// Standard SGR (Select Graphic Rendition) style codes.
 /// These control text styles (bold, italic, underline, blink, etc.)
 /// and do NOT include color codes (30–49, 90–107, 38/48;2;..., etc.).
