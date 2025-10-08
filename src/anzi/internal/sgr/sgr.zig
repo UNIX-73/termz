@@ -1,6 +1,7 @@
 const fmt = @import("std").fmt;
 
 pub const color = @import("color.zig");
+pub const style = @import("style.zig");
 
 pub fn wrap_sgr_code(code: []const u8, buf: []u8) ![]u8 {
     return try fmt.bufPrint(

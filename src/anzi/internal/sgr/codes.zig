@@ -5,8 +5,8 @@ pub const FG_RGB_CODE = "38;2;{d};{d};{d}";
 pub const BG_RGB_CODE = "48;2;{d};{d};{d}";
 
 // Defaults
-pub const FG_DEFAULT_CODE = "39";
-pub const BG_DEFAULT_CODE = "49";
+pub const FG_DEFAULT_COLOR_CODE = "39";
+pub const BG_DEFAULT_COLOR_CODE = "49";
 
 // Reset
 pub const RESET_CODE = "0";
@@ -33,3 +33,7 @@ pub const STRIKETHROUGH_OFF_CODE = "29";
 // Theme-based
 pub const FG_THEME_CODE = "{d}";
 pub const BG_THEME_CODE = "{d}";
+
+pub fn comptmime_wrap_sgr_code(comptime code: []const u8) []const u8 {
+    return "\x1b[" ++ code ++ "m";
+}
