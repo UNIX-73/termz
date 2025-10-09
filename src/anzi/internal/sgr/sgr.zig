@@ -1,15 +1,13 @@
-const fmt = @import("std").fmt;
+const u = @import("../utils.zig");
 
 pub const color = @import("color.zig");
 pub const style = @import("style.zig");
-const stdout_write = @import("../../../termz/termz.zig").io.write;
-const allocator = @import("std").heap.page_allocator;
 
-pub const SgrCodeEnum = union(enum) {
+pub const SgrEnum = union(enum) {
     ColorCode: color.ColorCodeEnum,
     StyleCode: style.StyleCodeEnum,
 
-    pub fn code_len(self: SgrCodeEnum) usize {
+    pub fn code_len(self: SgrEnum) usize {
         var len: usize = 0;
         switch (self) {
             .ColorCode => |val| {
@@ -26,7 +24,7 @@ pub const SgrCodeEnum = union(enum) {
 };
 
 pub fn wrap_sgr_code(code: []const u8, buf: []u8) ![]u8 {
-    return try fmt.bufPrint(
+    return try u.buf_fmt(
         buf,
         "\x1b[{s}m",
         .{code},
@@ -76,7 +74,7 @@ pub fn wrap_combine_sgr_slices(codes: [][]const u8, buf: []u8) ![]u8 {
     return buf[0 .. slice.len + 3];
 }
 
-pub fn wrap_combine_sgr_codes(codes: []const SgrCodeEnum, buf: []u8) ![]u8 {
+pub fn wrap_combine_sgr_codes(codes: []const SgrEnum, buf: []u8) ![]u8 {
     // Check buffer overflow
     var overflow_len: usize = 3;
 
@@ -113,18 +111,16 @@ pub fn wrap_combine_sgr_codes(codes: []const SgrCodeEnum, buf: []u8) ![]u8 {
     return buf[0 .. idx + 1];
 }
 
-pub fn send_combine_sgr_codes(codes: []const SgrCodeEnum) void {
+pub fn send_combine_sgr_codes(codes: []const SgrEnum) void {
     var len = 3 + (codes.len - 1); // 3( \x1b + [ + m ) + the commas
     for (codes) |code| {
         len += code.code_len();
     }
 
-    const buf: []u8 = allocator.alloc(u8, len) catch {
-        return;
-    };
+    const buf: []u8 = u.allocator.alloc(u8, len) catch return;
 
     const slice = wrap_combine_sgr_codes(codes, buf) catch return;
-    stdout_write(slice);
+    u.io.write(slice);
 
-    allocator.free(buf);
+    u.allocator.free(buf);
 }

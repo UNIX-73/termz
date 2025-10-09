@@ -1,7 +1,7 @@
 const types = @import("types.zig");
-const buf_print = @import("std").fmt.bufPrint;
+const u = @import("../utils.zig");
+
 const comptime_print = @import("std").fmt.comptimePrint;
-const stdout_write = @import("../../../termz/termz.zig").io.write;
 
 const STYLE_CODES: [77][]const u8 = init_style_codes: {
     var arr: [77][]const u8 = undefined;
@@ -163,12 +163,12 @@ pub const StyleCodeEnum = enum(u8) {
         if (slice.len < 2) {
             buf[2] = slice[0];
             buf[3] = 'm';
-            stdout_write(buf[0..4]);
+            u.io.write(buf[0..4]);
         } else {
             buf[2] = slice[0];
             buf[3] = slice[1];
             buf[4] = 'm';
-            stdout_write(buf[0..5]);
+            u.io.write(buf[0..5]);
         }
     }
 };

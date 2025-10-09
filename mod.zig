@@ -1,6 +1,7 @@
 pub const termz = @import("src/termz/termz.zig");
 pub const anzi = @import("src/anzi/anzi.zig");
 
+
 const std = @import("std");
 
 pub fn main() void {
@@ -25,6 +26,9 @@ pub fn main() void {
 
     const combined = anzi.sgr.wrap_combine_sgr_slices(&codes_array, &fmt_buf) catch return;
 
+    const t = anzi.cursor_control.CursorControlEnum{ .CURSOR_HOME = {} };
+    std.debug.print("{d}", .{t.get_required_buf_size()});
+
     termz.io.write(combined);
 
     termz.io.write("asaaaaaa\n");
@@ -44,9 +48,9 @@ pub fn main() void {
 
     const result = anzi.sgr.wrap_combine_sgr_codes(
         &.{
-            anzi.sgr.SgrCodeEnum{ .ColorCode = v1 },
-            anzi.sgr.SgrCodeEnum{ .ColorCode = v2 },
-            anzi.sgr.SgrCodeEnum{ .StyleCode = .DoubleUnderline },
+            anzi.sgr.SgrEnum{ .ColorCode = v1 },
+            anzi.sgr.SgrEnum{ .ColorCode = v2 },
+            anzi.sgr.SgrEnum{ .StyleCode = .DoubleUnderline },
         },
         &buf,
     ) catch {
@@ -58,16 +62,27 @@ pub fn main() void {
     termz.io.write("\njdsa\n");
 
     anzi.sgr.send_combine_sgr_codes(&.{
-        anzi.sgr.SgrCodeEnum{ .ColorCode = anzi_color.enum_fg_theme(.Blue) },
-        anzi.sgr.SgrCodeEnum{ .ColorCode = anzi_color.enum_bg_theme(.BrightMagenta) },
-        anzi.sgr.SgrCodeEnum{ .StyleCode = .DoubleUnderline },
-        anzi.sgr.SgrCodeEnum{ .StyleCode = .Blink_Slow },
-        anzi.sgr.SgrCodeEnum{ .StyleCode = .Overlined },
+        anzi.sgr.SgrEnum{ .ColorCode = anzi_color.enum_fg_theme(.Blue) },
+        anzi.sgr.SgrEnum{ .ColorCode = anzi_color.enum_bg_theme(.BrightMagenta) },
+        anzi.sgr.SgrEnum{ .StyleCode = .DoubleUnderline },
+        anzi.sgr.SgrEnum{ .StyleCode = .Blink_Slow },
+        anzi.sgr.SgrEnum{ .StyleCode = .Overlined },
     });
 
     termz.io.write("\nsdaskd 222\n");
 
+    t.send();
+
     anzi_style.StyleCodeEnum.Reset.send();
+
+    const win_size = termz.window.get_term_size() catch return;
+
+    std.debug.print("win_size: {d}x{d}", .{
+        win_size.ws_col,
+        win_size.ws_row,
+    });
+
+    anzi.erase_functions.EraseFunctionEnum.ERASE_DISPLAY.send();
 
     termz.mode.set_term_mode(old_config) catch return;
 }

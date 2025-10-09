@@ -1,7 +1,5 @@
 const types = @import("types.zig");
-
-const buf_print = @import("std").fmt.bufPrint;
-const stdout_write = @import("../../../termz/termz.zig").io.write;
+const u = @import("../utils.zig");
 
 pub const codes = @import("codes.zig");
 
@@ -22,22 +20,22 @@ pub const ColorCodeEnum = union(enum) {
     pub fn as_code(self: ColorCodeEnum, buf: []u8) ![]const u8 {
         return switch (self) {
             .FG_THEME => |v| {
-                return try buf_print(buf, codes.FG_THEME_CODE, .{v.as_fg_code()});
+                return try u.buf_fmt(buf, codes.FG_THEME_CODE, .{v.as_fg_code()});
             },
             .BG_THEME => |v| {
-                return try buf_print(buf, codes.BG_THEME_CODE, .{v.as_bg_code()});
+                return try u.buf_fmt(buf, codes.BG_THEME_CODE, .{v.as_bg_code()});
             },
             .FG_8BIT => |v| {
-                return try buf_print(buf, codes.FG_8BIT_CODE, .{v});
+                return try u.buf_fmt(buf, codes.FG_8BIT_CODE, .{v});
             },
             .BG_8BIT => |v| {
-                return try buf_print(buf, codes.BG_8BIT_CODE, .{v});
+                return try u.buf_fmt(buf, codes.BG_8BIT_CODE, .{v});
             },
             .FG_RGB => |v| {
-                return try buf_print(buf, codes.FG_RGB_CODE, .{ v.r, v.g, v.b });
+                return try u.buf_fmt(buf, codes.FG_RGB_CODE, .{ v.r, v.g, v.b });
             },
             .BG_RGB => |v| {
-                return try buf_print(buf, codes.BG_RGB_CODE, .{ v.r, v.g, v.b });
+                return try u.buf_fmt(buf, codes.BG_RGB_CODE, .{ v.r, v.g, v.b });
             },
             .FG_DEFAULT => codes.FG_DEFAULT_COLOR_CODE[0..],
             .BG_DEFAULT => codes.BG_DEFAULT_COLOR_CODE[0..],
@@ -74,72 +72,72 @@ pub fn enum_bg_default() ColorCodeEnum {
 // Single instruction ansi code senders
 pub fn set_fg_theme_color(theme: ThemeColorEnum) void {
     const buf: u8[6] = undefined;
-    const fmt = buf_print(
+    const fmt = u.buf_fmt(
         &buf,
         codes.comptmime_wrap_sgr_code(codes.FG_THEME_CODE),
         .{theme.as_fg_code()},
     ) catch return;
-    stdout_write(fmt);
+    u.io.write(fmt);
 }
 
 pub fn set_bg_theme_color(theme: ThemeColorEnum) void {
     const buf: u8[6] = undefined;
-    const fmt = buf_print(
+    const fmt = u.buf_fmt(
         &buf,
         codes.comptmime_wrap_sgr_code(codes.FG_THEME_CODE),
         .{theme.as_bg_code()},
     ) catch return;
-    stdout_write(fmt);
+    u.io.write(fmt);
 }
 
 pub fn set_fg_8bit_color(color: u8) void {
     const buf: u8[12] = undefined;
-    const fmt = buf_print(
+    const fmt = u.buf_fmt(
         &buf,
         codes.comptmime_wrap_sgr_code(codes.FG_8BIT_CODE),
         .{color},
     ) catch return;
-    stdout_write(fmt);
+    u.io.write(fmt);
 }
 
 pub fn set_bg_8bit_color(color: u8) void {
     const buf: u8[12] = undefined;
-    const fmt = buf_print(
+    const fmt = u.buf_fmt(
         &buf,
         codes.comptmime_wrap_sgr_code(codes.BG_8BIT_CODE),
         .{color},
     ) catch return;
-    stdout_write(fmt);
+    u.io.write(fmt);
 }
 
 pub fn set_fg_rgb_color(r: u8, g: u8, b: u8) void {
     var buf: [19]u8 = undefined;
-    const fmt = buf_print(
+    const fmt = u.buf_fmt(
         &buf,
         codes.comptmime_wrap_sgr_code(codes.FG_RGB_CODE),
         .{ r, g, b },
     ) catch return;
-    stdout_write(fmt);
+    u.io.write(fmt);
 }
 
 pub fn set_bg_rgb_color(r: u8, g: u8, b: u8) void {
     var buf: [19]u8 = undefined;
-    const fmt = buf_print(
+    const fmt = u.buf_fmt(
         &buf,
         codes.comptmime_wrap_sgr_code(codes.BG_RGB_CODE),
         .{ r, g, b },
     ) catch return;
-    stdout_write(fmt);
+    u.io.write(fmt);
 }
 
 pub fn set_fg_default_color() void {
-    stdout_write(
+    u.io.write(
         codes.comptmime_wrap_sgr_code(codes.FG_DEFAULT_COLOR_CODE),
     );
 }
 
 pub fn set_bg_default_color() void {
-    stdout_write(
+    u.io.write(
         codes.comptmime_wrap_sgr_code(codes.BG_DEFAULT_COLOR_CODE),
     );
 }
