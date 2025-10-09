@@ -1,7 +1,6 @@
 pub const termz = @import("src/termz/termz.zig");
 pub const anzi = @import("src/anzi/anzi.zig");
 
-
 const std = @import("std");
 
 pub fn main() void {
@@ -84,5 +83,11 @@ pub fn main() void {
 
     anzi.erase_functions.EraseFunctionEnum.ERASE_DISPLAY.send();
 
+    (anzi.screen_mode.ScreenModeEnum{ .SET_MODE = .MODE_19 }).send();
+
+    anzi.private_mode.PrivateModeEnum.ALT_BUFFER_ENABLE.send();
+
     termz.mode.set_term_mode(old_config) catch return;
+
+    
 }
